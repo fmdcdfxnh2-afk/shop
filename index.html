@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="管理システム" />
+  <title>🌸 管理システム</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;600;700&family=Noto+Serif+JP:wght@700&display=swap" rel="stylesheet" />
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    html,body{height:100%;background:#080b12;color:#f9fafb;font-family:'Noto Sans JP',sans-serif;-webkit-font-smoothing:antialiased;}
+    input,select,textarea,button{font-family:inherit;}
+    ::-webkit-scrollbar{width:4px;height:4px;}
+    ::-webkit-scrollbar-track{background:transparent;}
+    ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.15);border-radius:4px;}
+    #app{min-height:100vh;}
+    .login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;}
+    .login-box{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:36px 28px;width:100%;max-width:360px;}
+    .login-logo{text-align:center;font-size:44px;margin-bottom:8px;}
+    .login-title{text-align:center;font-family:'Noto Serif JP',serif;font-size:18px;color:#e879f9;margin-bottom:28px;}
+    .login-error{background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);color:#ef4444;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:14px;}
+    .header{position:sticky;top:0;z-index:100;background:rgba(8,11,18,0.95);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,0.06);padding:0 16px;}
+    .header-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;height:54px;gap:6px;}
+    .logo{font-size:20px;flex-shrink:0;}
+    .tabs{display:flex;gap:0;overflow-x:auto;flex:1;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+    .tabs::-webkit-scrollbar{display:none;}
+    .tab{background:none;border:none;border-bottom:2px solid transparent;color:#9ca3af;padding:0 12px;height:54px;font-size:12px;font-weight:400;cursor:pointer;white-space:nowrap;transition:all 0.15s;flex-shrink:0;}
+    .tab.active{color:#e879f9;border-bottom-color:#e879f9;font-weight:700;background:rgba(232,121,249,0.08);}
+    .logout-btn{background:none;border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#9ca3af;padding:4px 10px;font-size:11px;cursor:pointer;flex-shrink:0;white-space:nowrap;}
+    .content{max-width:1100px;margin:0 auto;padding:16px;}
+    .card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:18px;}
+    .stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
+    @media(min-width:600px){.stat-grid{grid-template-columns:repeat(4,1fr);}}
+    .stat-card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:14px;text-align:center;}
+    .stat-label{color:#9ca3af;font-size:10px;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px;}
+    .stat-value{font-size:22px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums;}
+    .stat-sub{color:#6b7280;font-size:10px;margin-top:4px;}
+    .badge{display:inline-block;border-radius:6px;padding:2px 8px;font-size:11px;font-weight:700;white-space:nowrap;}
+    .row-item{padding:14px 16px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:12px;cursor:pointer;transition:background 0.15s;margin-bottom:8px;}
+    .row-item:hover,.row-item:active{background:rgba(255,255,255,0.07);}
+    .avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0;}
+    .section-label{color:#9ca3af;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:12px;}
+    .inp{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#f9fafb;padding:10px 14px;font-size:14px;outline:none;width:100%;}
+    .inp:focus{border-color:rgba(232,121,249,0.5);}
+    select.inp option{background:#1a1d2e;color:#f9fafb;}
+    .btn{background:linear-gradient(135deg,#e879f9,#a855f7);border:none;border-radius:8px;color:#fff;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;}
+    .btn-secondary{background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#9ca3af;padding:10px 18px;font-size:13px;font-weight:600;cursor:pointer;}
+    .btn-danger{background:#ef4444;border:none;border-radius:8px;color:#fff;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;}
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:16px;}
+    .modal{background:#0f1117;border:1px solid rgba(255,255,255,0.12);border-radius:20px;width:100%;max-width:580px;max-height:90vh;overflow-y:auto;padding:24px;}
+    .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;}
+    .modal-title{color:#f9fafb;font-family:'Noto Serif JP',serif;font-size:17px;}
+    .close-btn{background:none;border:none;color:#9ca3af;font-size:22px;cursor:pointer;padding:4px;}
+    .form-grid{display:grid;gap:14px;}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+    .form-field{display:grid;gap:6px;}
+    .form-label{color:#9ca3af;font-size:12px;}
+    .chart-bars{display:flex;align-items:flex-end;gap:6px;height:90px;}
+    .chart-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;}
+    .chart-bar{width:100%;border-radius:4px 4px 0 0;}
+    .chart-date{font-size:10px;}
+    .search-row{display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap;}
+    .ng-tag{background:rgba(239,68,68,0.15);color:#ef4444;border:1px solid rgba(239,68,68,0.3);border-radius:6px;padding:3px 10px;font-size:12px;cursor:pointer;display:inline-block;}
+    .used-tag{background:rgba(232,121,249,0.15);color:#e879f9;border:1px solid rgba(232,121,249,0.3);border-radius:6px;padding:3px 10px;font-size:12px;display:inline-block;}
+    .salary-bar{height:6px;border-radius:3px;background:rgba(255,255,255,0.1);margin-top:8px;overflow:hidden;}
+    .salary-bar-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,#e879f9,#a855f7);}
+    .admin-tag{background:rgba(245,158,11,0.15);color:#f59e0b;border:1px solid rgba(245,158,11,0.3);border-radius:6px;padding:2px 8px;font-size:10px;font-weight:700;}
+    .highlight-box{background:rgba(232,121,249,0.08);border:1px solid rgba(232,121,249,0.2);border-radius:10px;padding:12px 16px;}
+    .flex{display:flex;} .flex-wrap{flex-wrap:wrap;} .gap-6{gap:6px;} .gap-8{gap:8px;} .gap-10{gap:10px;}
+    .items-center{align-items:center;} .justify-between{justify-content:space-between;} .justify-end{justify-content:flex-end;}
+    .flex-1{flex:1;} .mt-4{margin-top:4px;} .mt-8{margin-top:8px;} .mt-10{margin-top:10px;}
+    .mt-16{margin-top:16px;} .mt-20{margin-top:20px;} .mb-6{margin-bottom:6px;} .mb-8{margin-bottom:8px;}
+    .grid{display:grid;} .gap-16{gap:16px;} .text-sm{font-size:13px;} .text-muted{color:#9ca3af;} .text-dim{color:#6b7280;}
+  </style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const KEYS={customers:'sm_customers',casts:'sm_casts',bookings:'sm_bookings',users:'sm_users',session:'sm_session'};
+
+// ★ 管理者アカウント（⚙️アカウント管理画面からも編集できます）
+const defaultUsers=[
+  {id:1,username:'admin',password:'admin1234',role:'admin',displayName:'管理者'},
+];
+
+const defaultCustomers=[
+  {id:1,name:"田中 太郎",phone:"090-1234-5678",visits:12,lastVisit:"2026-04-20",totalSpent:84000,usedCasts:["さくら","あおい"],ngCasts:["みく"],ngNotes:"強めのプレイNG",memo:"常連。誕生日4/15。ビール好き。",rank:"VIP"},
+  {id:2,name:"佐藤 健",phone:"080-9876-5432",visits:3,lastVisit:"2026-04-18",totalSpent:21000,usedCasts:["りな"],ngCasts:[],ngNotes:"",memo:"初めは緊張してたが慣れてきた",rank:"通常"},
+  {id:3,name:"山田 次郎",phone:"070-1111-2222",visits:28,lastVisit:"2026-04-22",totalSpent:196000,usedCasts:["さくら","みく","あおい","りな"],ngCasts:[],ngNotes:"",memo:"太っ腹。チップ多め。毎週来店。",rank:"VIP"},
+];
+
+const defaultCasts=[
+  {id:1,name:"さくら",status:"稼働中",startTime:"18:00",endTime:"24:00",phone:"090-0001-0001",note:"人気No.1",cutRate:50},
+  {id:2,name:"あおい",status:"待機中",startTime:"19:00",endTime:"25:00",phone:"090-0002-0002",note:"",cutRate:45},
+  {id:3,name:"みく",status:"外出中",startTime:"17:00",endTime:"23:00",phone:"090-0003-0003",note:"17時以降のみ",cutRate:50},
+  {id:4,name:"りな",status:"休憩中",startTime:"20:00",endTime:"26:00",phone:"090-0004-0004",note:"新人",cutRate:40},
+  {id:5,name:"ゆき",status:"出勤前",startTime:"21:00",endTime:"27:00",phone:"090-0005-0005",note:"",cutRate:45},
+];
+
+const defaultBookings=[
+  {id:1,customerName:"田中 太郎",castName:"さくら",startTime:"19:30",duration:60,status:"完了",address:"渋谷区道玄坂1-1",amount:15000,date:"2026-04-23"},
+  {id:2,customerName:"山田 次郎",castName:"みく",startTime:"20:00",duration:90,status:"進行中",address:"新宿区歌舞伎町2-2",amount:20000,date:"2026-04-23"},
+  {id:3,customerName:"鈴木 一郎",castName:"あおい",startTime:"21:00",duration:60,status:"予約",address:"港区六本木3-3",amount:15000,date:"2026-04-23"},
+  {id:4,customerName:"田中 太郎",castName:"さくら",startTime:"17:00",duration:60,status:"完了",address:"渋谷区円山町1-1",amount:14000,date:"2026-04-23"},
+];
+
+const salesData=[
+  {date:"4/17",amount:98000},{date:"4/18",amount:112000},{date:"4/19",amount:87000},
+  {date:"4/20",amount:134000},{date:"4/21",amount:156000},{date:"4/22",amount:143000},{date:"4/23",amount:84000},
+];
+
+function load(key,def){try{const v=localStorage.getItem(key);return v?JSON.parse(v):def;}catch{return def;}}
+function save(key,val){try{localStorage.setItem(key,JSON.stringify(val));}catch{}}
+
+const savedSession=load(KEYS.session,null);
+let state={
+  loggedIn:!!savedSession,currentUser:savedSession,
+  tab:'dashboard',search:'',modal:null,loginError:'',
+  customers:load(KEYS.customers,defaultCustomers),
+  casts:load(KEYS.casts,defaultCasts),
+  bookings:load(KEYS.bookings,defaultBookings),
+  users:load(KEYS.users,defaultUsers),
+};
+
+function setState(patch){
+  Object.assign(state,patch);
+  if(patch.customers)save(KEYS.customers,state.customers);
+  if(patch.casts)save(KEYS.casts,state.casts);
+  if(patch.bookings)save(KEYS.bookings,state.bookings);
+  if(patch.users)save(KEYS.users,state.users);
+  render();
+}
+
+const statusColor={"稼働中":"#22c55e","待機中":"#3b82f6","外出中":"#f59e0b","休憩中":"#8b5cf6","出勤前":"#6b7280"};
+const bookingStatusColor={"進行中":"#22c55e","待機":"#f59e0b","予約":"#3b82f6","完了":"#9ca3af"};
+const rankColor={"VIP":"#f59e0b","常連":"#e879f9","通常":"#6b7280","ブラック":"#ef4444"};
+
+function badge(t,c){return `<span class="badge" style="background:${c}22;color:${c};border:1px solid ${c}44">${t}</span>`;}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+// 今日の日付
+function todayStr(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+
+// キャストごとの今日の集計
+function calcCastToday(castName){
+  const today=todayStr();
+  const todayBookings=state.bookings.filter(b=>b.castName===castName&&b.date===today);
+  const totalAmount=todayBookings.reduce((s,b)=>s+b.amount,0);
+  const castCut=todayBookings.reduce((s,b)=>s+Math.round(b.amount*(b.cutRate||60)/100),0);
+  const count=todayBookings.length;
+  return{totalAmount,castCut,count};
+}
+
+function render(){document.getElementById('app').innerHTML=state.loggedIn?buildApp():buildLogin();bindEvents();}
+
+// LOGIN
+function buildLogin(){
+  return `<div class="login-wrap"><div class="login-box">
+    <div class="login-logo">🌸</div>
+    <div class="login-title">管理システム</div>
+    ${state.loginError?`<div class="login-error">⚠️ ${esc(state.loginError)}</div>`:''}
+    <div class="form-grid">
+      <div class="form-field"><label class="form-label">ID</label><input class="inp" id="l-user" placeholder="ユーザーID" autocomplete="username" /></div>
+      <div class="form-field"><label class="form-label">パスワード</label><input class="inp" id="l-pass" type="password" placeholder="パスワード" autocomplete="current-password" /></div>
+      <button class="btn" id="login-btn" style="width:100%;margin-top:8px">ログイン</button>
+    </div>
+  </div></div>`;
+}
+function doLogin(){
+  const u=document.getElementById('l-user').value.trim();
+  const p=document.getElementById('l-pass').value;
+  const found=state.users.find(x=>x.username===u&&x.password===p);
+  if(found){const s={id:found.id,username:found.username,role:found.role,displayName:found.displayName};save(KEYS.session,s);setState({loggedIn:true,currentUser:s,loginError:''});}
+  else setState({loginError:'IDまたはパスワードが違います'});
+}
+function doLogout(){save(KEYS.session,null);setState({loggedIn:false,currentUser:null,tab:'dashboard'});}
+
+// APP SHELL
+function buildApp(){
+  const tabs=[
+    {id:'dashboard',label:'📊 ダッシュ'},
+    {id:'customers',label:'👥 顧客'},
+    {id:'casts',label:'✨ キャスト'},
+    {id:'bookings',label:'📋 予約'},
+    {id:'salary',label:'💰 売上集計'},
+    {id:'accounts',label:'⚙️ 設定'},
+  ];
+  return `
+    <div class="header"><div class="header-inner">
+      <div class="logo">🌸</div>
+      <div class="tabs">${tabs.map(t=>`<button class="tab${state.tab===t.id?' active':''}" data-tab="${t.id}">${t.label}</button>`).join('')}</div>
+      <span class="user-label">${esc(state.currentUser.displayName)}</span>
+      <span class="admin-tag">管理者</span>
+      <button class="logout-btn" id="logout-btn">ログアウト</button>
+    </div></div>
+    <div class="content">${buildContent()}</div>
+    ${state.modal?buildModal():''}
+  `;
+}
+
+function buildContent(){
+  switch(state.tab){
+    case 'dashboard': return buildDashboard();
+    case 'customers': return buildCustomers();
+    case 'casts': return buildCasts();
+    case 'bookings': return buildBookings();
+    case 'salary': return buildSalary();
+    case 'accounts': return buildAccounts();
+    default: return buildDashboard();
+  }
+}
+
+// DASHBOARD
+function buildDashboard(){
+  const today=todayStr();
+  const todayBookings=state.bookings.filter(b=>b.date===today);
+  const todayRevenue=todayBookings.reduce((s,b)=>s+b.amount,0);
+  const activeCount=state.casts.filter(c=>c.status==='稼働中').length;
+  const maxSales=Math.max(...salesData.map(d=>d.amount));
+  return `<div class="grid" style="gap:16px">
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-label">本日売上</div><div class="stat-value" style="color:#e879f9">¥${todayRevenue.toLocaleString()}</div><div class="stat-sub">${todayBookings.length}件</div></div>
+      <div class="stat-card"><div class="stat-label">稼働中</div><div class="stat-value" style="color:#22c55e">${activeCount}名</div><div class="stat-sub">出勤${state.casts.filter(c=>c.status!=='出勤前').length}名</div></div>
+      <div class="stat-card"><div class="stat-label">顧客数</div><div class="stat-value" style="color:#f59e0b">${state.customers.length}名</div><div class="stat-sub">VIP ${state.customers.filter(c=>c.rank==='VIP').length}名</div></div>
+      <div class="stat-card"><div class="stat-label">キャスト数</div><div class="stat-value" style="color:#3b82f6">${state.casts.length}名</div></div>
+    </div>
+    <div class="card">
+      <div class="section-label">週間売上推移</div>
+      <div class="chart-bars">
+        ${salesData.map((d,i)=>{const h=Math.round((d.amount/maxSales)*72);const t=i===salesData.length-1;return`<div class="chart-bar-wrap"><div style="font-size:9px;color:#9ca3af;margin-bottom:2px">¥${(d.amount/10000).toFixed(0)}万</div><div class="chart-bar" style="height:${h}px;background:${t?'linear-gradient(to top,#e879f9,#a855f7)':'rgba(232,121,249,0.2)'}"></div><div class="chart-date" style="color:${t?'#e879f9':'#6b7280'};font-weight:${t?700:400}">${d.date}</div></div>`;}).join('')}
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-label">本日のキャスト別集計</div>
+      ${state.casts.map(c=>{
+        const calc=calcCastToday(c.name);
+        return`<div style="display:flex;align-items:center;gap:12px;padding:10px 12px;background:rgba(255,255,255,0.03);border-radius:10px;margin-bottom:6px">
+          <div style="width:8px;height:8px;border-radius:50%;background:${statusColor[c.status]||'#6b7280'};flex-shrink:0"></div>
+          <div style="flex:1;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px">
+            <span style="font-size:14px;font-weight:600">${esc(c.name)}</span>
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+              ${badge(c.status,statusColor[c.status]||'#6b7280')}
+              <span style="color:#9ca3af;font-size:12px">${calc.count}件</span>
+              <span style="color:#6b7280;font-size:11px">売上 ¥${calc.totalAmount.toLocaleString()}</span>
+              <span style="color:#e879f9;font-size:13px;font-weight:700">取分 ¥${calc.castCut.toLocaleString()}</span>
+            </div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>`;
+}
+
+// CUSTOMERS
+function buildCustomers(){
+  const filtered=state.customers.filter(c=>c.name.includes(state.search)||c.phone.includes(state.search));
+  return `<div>
+    <div class="search-row">
+      <input class="inp flex-1" id="search-inp" placeholder="名前・電話番号で検索..." value="${esc(state.search)}" style="min-width:180px" />
+      <button class="btn" id="add-customer-btn">＋ 新規顧客</button>
+    </div>
+    ${filtered.length===0?'<div style="color:#6b7280;text-align:center;padding:40px">該当なし</div>':''}
+    ${filtered.map(c=>`<div class="row-item" data-customer-id="${c.id}">
+      <div class="flex items-center justify-between flex-wrap gap-8">
+        <div class="flex items-center gap-8">
+          <div class="avatar" style="background:linear-gradient(135deg,#e879f9,#a855f7)">${esc(c.name[0])}</div>
+          <div><div class="flex items-center gap-8">${esc(c.name)} ${badge(c.rank,rankColor[c.rank]||'#6b7280')}</div><div class="text-muted mt-4" style="font-size:12px">${esc(c.phone)}</div></div>
+        </div>
+        <div style="text-align:right"><div style="color:#e879f9;font-size:13px;font-weight:700">¥${c.totalSpent.toLocaleString()}</div><div class="text-dim" style="font-size:11px">${c.visits}回来店 · 最終${esc(c.lastVisit)}</div></div>
+      </div>
+      ${(c.ngCasts.length>0||c.memo)?`<div class="flex flex-wrap gap-6 mt-10">${c.ngCasts.map(n=>`<span class="badge" style="background:#ef444422;color:#ef4444;border:1px solid #ef444444">NG: ${esc(n)}</span>`).join('')}${c.memo?`<span style="color:#9ca3af;font-size:11px">📝 ${esc(c.memo.substring(0,40))}${c.memo.length>40?'...':''}</span>`:''}</div>`:''}
+    </div>`).join('')}
+  </div>`;
+}
+
+// CASTS
+function buildCasts(){
+  return `<div>
+    <div class="flex justify-end mb-8"><button class="btn" id="add-cast-btn">＋ キャスト追加</button></div>
+    ${state.casts.map(c=>`<div class="row-item" data-cast-id="${c.id}">
+      <div class="flex items-center justify-between flex-wrap gap-8">
+        <div class="flex items-center gap-8">
+          <div class="avatar" style="background:linear-gradient(135deg,${statusColor[c.status]||'#6b7280'}66,${statusColor[c.status]||'#6b7280'}22);border:2px solid ${statusColor[c.status]||'#6b7280'}">${esc(c.name[0])}</div>
+          <div><div class="flex items-center gap-8">${esc(c.name)} ${badge(c.status,statusColor[c.status]||'#6b7280')}</div><div class="text-muted mt-4" style="font-size:12px">${esc(c.startTime)}〜${esc(c.endTime)}${c.note?' · '+esc(c.note):''}</div></div>
+        </div>
+
+      </div>
+    </div>`).join('')}
+  </div>`;
+}
+
+// BOOKINGS
+function buildBookings(){
+  const today=todayStr();
+  const todayB=state.bookings.filter(b=>b.date===today);
+  const otherB=state.bookings.filter(b=>b.date!==today);
+  function bookingRow(b){
+    return `<div class="row-item" data-booking-id="${b.id}">
+      <div class="flex justify-between items-center flex-wrap gap-8">
+        <div>
+          <div class="flex items-center gap-8 mb-4">
+            <span style="font-size:15px;font-weight:700">${esc(b.customerName)}</span>
+            <span class="text-muted">→</span>
+            <span style="color:#e879f9;font-weight:600">${esc(b.castName)}</span>
+            ${badge(b.status,bookingStatusColor[b.status]||'#6b7280')}
+          </div>
+          <div class="text-muted" style="font-size:12px">📍 ${esc(b.address)} · ${esc(b.date)}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:14px;font-weight:700">${esc(b.startTime)} (${b.duration}分)</div>
+          <div style="color:#22c55e;font-size:13px">¥${b.amount.toLocaleString()}</div>
+        </div>
+      </div>
+    </div>`;
+  }
+  return `<div>
+    <div class="flex justify-between items-center mb-8">
+      <div class="text-muted text-sm">予約・稼働管理</div>
+      <button class="btn" id="add-booking-btn">＋ 新規予約</button>
+    </div>
+    ${todayB.length>0?`<div style="color:#e879f9;font-size:12px;font-weight:700;margin-bottom:8px">📅 本日</div>${todayB.map(bookingRow).join('')}`:''}
+    ${otherB.length>0?`<div style="color:#9ca3af;font-size:12px;font-weight:700;margin:16px 0 8px">過去・予定</div>${otherB.map(bookingRow).join('')}`:''}
+    ${state.bookings.length===0?'<div style="color:#6b7280;text-align:center;padding:40px">予約データなし</div>':''}
+  </div>`;
+}
+
+// SALARY（売上集計）
+function buildSalary(){
+  const today=todayStr();
+  const castStats=state.casts.map(c=>{
+    const calc=calcCastToday(c.name);
+    return{...c,...calc};
+  });
+  const totalRevenue=castStats.reduce((s,c)=>s+c.totalAmount,0);
+  const totalCut=castStats.reduce((s,c)=>s+c.castCut,0);
+  const maxAmount=Math.max(...castStats.map(c=>c.castCut),1);
+
+  return `<div>
+    <div class="highlight-box mb-8" style="margin-bottom:16px">
+      <div style="color:#9ca3af;font-size:11px;margin-bottom:4px">本日（${today}）の集計</div>
+      <div class="flex justify-between items-center flex-wrap gap-8">
+        <div><div style="color:#6b7280;font-size:11px">総売上</div><div style="color:#f9fafb;font-size:20px;font-weight:800;font-variant-numeric:tabular-nums">¥${totalRevenue.toLocaleString()}</div></div>
+        <div style="text-align:right"><div style="color:#6b7280;font-size:11px">キャスト取分合計</div><div style="color:#e879f9;font-size:20px;font-weight:800;font-variant-numeric:tabular-nums">¥${totalCut.toLocaleString()}</div></div>
+        <div style="text-align:right"><div style="color:#6b7280;font-size:11px">店舗利益</div><div style="color:#22c55e;font-size:20px;font-weight:800;font-variant-numeric:tabular-nums">¥${(totalRevenue-totalCut).toLocaleString()}</div></div>
+      </div>
+    </div>
+
+    <div class="section-label">キャスト別内訳</div>
+    ${castStats.map(c=>{
+      const pct=Math.round((c.castCut/maxAmount)*100);
+      return `<div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:16px;margin-bottom:8px;">
+        <div class="flex justify-between items-center">
+          <div class="flex items-center gap-8">
+            <div class="avatar" style="background:linear-gradient(135deg,${statusColor[c.status]||'#6b7280'}66,${statusColor[c.status]||'#6b7280'}22);border:2px solid ${statusColor[c.status]||'#6b7280'};width:32px;height:32px;font-size:12px">${esc(c.name[0])}</div>
+            <div>
+              <div style="font-weight:700;font-size:14px">${esc(c.name)}</div>
+              <div style="color:#9ca3af;font-size:11px">${c.count}件 · 売上 ¥${c.totalAmount.toLocaleString()} · 取り分${c.cutRate}%</div>
+            </div>
+          </div>
+          <div style="text-align:right">
+            <div style="color:#e879f9;font-size:18px;font-weight:800;font-variant-numeric:tabular-nums">¥${c.castCut.toLocaleString()}</div>
+            <div style="color:#6b7280;font-size:11px">店舗 ¥${(c.totalAmount-c.castCut).toLocaleString()}</div>
+          </div>
+        </div>
+        <div class="salary-bar mt-8"><div class="salary-bar-fill" style="width:${pct}%"></div></div>
+      </div>`;
+    }).join('')}
+
+    <div class="section-label" style="margin-top:20px">本日の予約明細</div>
+    ${state.bookings.filter(b=>b.date===today).map(b=>{
+      const cast=state.casts.find(c=>c.name===b.castName);
+      const cut=Math.round(b.amount*(b.cutRate||60)/100);
+      return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:rgba(255,255,255,0.02);border-radius:8px;margin-bottom:4px;flex-wrap:wrap;gap:6px">
+        <div style="font-size:13px">${esc(b.startTime)} <span style="color:#e879f9;font-weight:600">${esc(b.castName)}</span> × ${esc(b.customerName)} ${badge(b.status,bookingStatusColor[b.status]||'#6b7280')}</div>
+        <div style="text-align:right;font-size:13px">¥${b.amount.toLocaleString()} → <span style="color:#e879f9">取分 ¥${cut.toLocaleString()}</span></div>
+      </div>`;
+    }).join('')}
+    ${state.bookings.filter(b=>b.date===today).length===0?'<div style="color:#6b7280;text-align:center;padding:20px;font-size:13px">本日の予約データなし</div>':''}
+  </div>`;
+}
+
+// ACCOUNTS
+function buildAccounts(){
+  return `<div>
+    <div style="color:#9ca3af;font-size:13px;margin-bottom:16px">管理者アカウント・キャスト取り分設定</div>
+    <div class="section-label">ログインアカウント</div>
+    <div class="flex justify-end mb-8"><button class="btn" id="add-user-btn">＋ アカウント追加</button></div>
+    ${state.users.map(u=>`<div class="row-item" data-user-id="${u.id}">
+      <div class="flex justify-between items-center">
+        <div><div class="flex items-center gap-8">${esc(u.displayName)} <span class="admin-tag">管理者</span></div><div style="color:#6b7280;font-size:12px;margin-top:4px">ID: ${esc(u.username)}</div></div>
+        <div style="color:#9ca3af;font-size:12px">PW: ${esc(u.password)}</div>
+      </div>
+    </div>`).join('')}
+    <div class="section-label" style="margin-top:20px">バック率（コース別自動適用）</div>
+    <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:14px">
+      ${COURSES.filter(c=>c.label!=='カスタム').map(c=>`
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04)">
+          <span style="color:#f9fafb;font-size:13px">${esc(c.label.split(' ')[0])} ${esc(c.label.split(' ')[1])}</span>
+          <span style="color:#e879f9;font-weight:700">バック ${c.cutRate}%　取分 ¥${Math.round(c.amount*c.cutRate/100).toLocaleString()}</span>
+        </div>
+      `).join('')}
+    </div>
+  </div>`;
+}
+
+// MODALS
+function buildModal(){
+  const m=state.modal;
+  if(m.type==='customer') return buildCustomerModal(m.data);
+  if(m.type==='cast') return buildCastModal(m.data);
+  if(m.type==='booking') return buildBookingModal(m.data);
+  if(m.type==='user') return buildUserModal(m.data);
+  return '';
+}
+
+function buildCustomerModal(c){
+  const isNew=!c.id||c.id===0;
+  return `<div class="overlay" id="overlay"><div class="modal">
+    <div class="modal-header"><div class="modal-title">${isNew?'新規顧客':'顧客詳細 / 編集'}</div><button class="close-btn" id="modal-close">✕</button></div>
+    <div class="form-grid">
+      <div class="form-row"><div class="form-field"><label class="form-label">名前</label><input class="inp" id="f-name" value="${esc(c.name)}" placeholder="お客様の名前" /></div><div class="form-field"><label class="form-label">電話番号</label><input class="inp" id="f-phone" value="${esc(c.phone)}" placeholder="090-0000-0000" /></div></div>
+      <div class="form-row"><div class="form-field"><label class="form-label">ランク</label><select class="inp" id="f-rank">${['通常','常連','VIP','ブラック'].map(r=>`<option${c.rank===r?' selected':''}>${r}</option>`).join('')}</select></div><div class="form-field"><label class="form-label">来店回数 / 累計売上</label><div style="color:#f9fafb;padding:10px 14px;background:rgba(255,255,255,0.04);border-radius:8px;font-size:14px">${c.visits}回 / ¥${(c.totalSpent||0).toLocaleString()}</div></div></div>
+      <div class="form-field"><label class="form-label">NGキャスト</label>
+        <div id="ng-tags" class="flex flex-wrap gap-6 mb-6">${(c.ngCasts||[]).map(n=>`<span class="ng-tag" data-remove-ng="${esc(n)}">${esc(n)} ✕</span>`).join('')}${(c.ngCasts||[]).length===0?'<span style="color:#6b7280;font-size:12px">なし</span>':''}</div>
+        <div class="flex gap-8"><select class="inp flex-1" id="f-ng-select"><option value="">キャストを選択</option>${state.casts.map(cast=>`<option value="${esc(cast.name)}">${esc(cast.name)}</option>`).join('')}</select><button class="btn-danger" id="add-ng-btn" type="button">追加</button></div>
+      </div>
+      <div class="form-field"><label class="form-label">NG事項</label><input class="inp" id="f-ng-notes" value="${esc(c.ngNotes)}" placeholder="例：強めのプレイNG" /></div>
+      <div class="form-field"><label class="form-label">メモ・特記事項</label><textarea class="inp" id="f-memo" rows="3" style="resize:vertical">${esc(c.memo)}</textarea></div>
+      <div class="form-field"><label class="form-label">利用キャスト履歴</label><div class="flex flex-wrap gap-6">${(c.usedCasts||[]).map(n=>`<span class="used-tag">${esc(n)}</span>`).join('')||'<span style="color:#6b7280;font-size:12px">なし</span>'}</div></div>
+    </div>
+    <div class="flex gap-8 mt-20 justify-between"><button class="btn-danger" id="modal-delete">削除</button><div class="flex gap-8"><button class="btn-secondary" id="modal-cancel">キャンセル</button><button class="btn" id="modal-save">保存する</button></div></div>
+  </div></div>`;
+}
+
+function buildCastModal(c){
+  const isNew=!c.id||c.id===0;
+  return `<div class="overlay" id="overlay"><div class="modal">
+    <div class="modal-header"><div class="modal-title">${isNew?'キャスト追加':'キャスト編集'}</div><button class="close-btn" id="modal-close">✕</button></div>
+    <div class="form-grid">
+      <div class="form-row"><div class="form-field"><label class="form-label">名前</label><input class="inp" id="f-name" value="${esc(c.name)}" placeholder="キャスト名" /></div><div class="form-field"><label class="form-label">ステータス</label><select class="inp" id="f-status">${Object.keys(statusColor).map(s=>`<option${c.status===s?' selected':''}>${s}</option>`).join('')}</select></div></div>
+      <div class="form-row"><div class="form-field"><label class="form-label">出勤時間</label><input class="inp" id="f-start" value="${esc(c.startTime)}" placeholder="18:00" /></div><div class="form-field"><label class="form-label">退勤時間</label><input class="inp" id="f-end" value="${esc(c.endTime)}" placeholder="24:00" /></div></div>
+      <div class="form-field"><label class="form-label">取り分（%）</label><input class="inp" id="f-cutrate" type="number" value="${c.cutRate||50}" min="0" max="100" /></div>
+      <div class="form-field"><label class="form-label">電話番号</label><input class="inp" id="f-phone" value="${esc(c.phone)}" /></div>
+      <div class="form-field"><label class="form-label">メモ</label><input class="inp" id="f-note" value="${esc(c.note)}" /></div>
+    </div>
+    <div class="flex gap-8 mt-20 justify-between"><button class="btn-danger" id="modal-delete">削除</button><div class="flex gap-8"><button class="btn-secondary" id="modal-cancel">キャンセル</button><button class="btn" id="modal-save" style="background:linear-gradient(135deg,#3b82f6,#8b5cf6)">保存する</button></div></div>
+  </div></div>`;
+}
+
+// コース定義
+const COURSES=[
+  {label:'60分 ¥13,000 (60%)',duration:60,amount:13000,cutRate:60},
+  {label:'75分 ¥16,000 (60%)',duration:75,amount:16000,cutRate:60},
+  {label:'90分 ¥19,000 (65%)',duration:90,amount:19000,cutRate:65},
+  {label:'120分 ¥25,000 (65%)',duration:120,amount:25000,cutRate:65},
+  {label:'150分 ¥31,000 (70%)',duration:150,amount:31000,cutRate:70},
+  {label:'180分 ¥37,000 (70%)',duration:180,amount:37000,cutRate:70},
+  {label:'延長30分 ¥8,000 (70%)',duration:30,amount:8000,cutRate:70},
+  {label:'カスタム',duration:0,amount:0,cutRate:0},
+];
+
+function buildBookingModal(b){
+  const isNew=!b.id||b.id===0;
+  const today=todayStr();
+  // 現在のデータに合うコースを探す
+  const matchedCourse=COURSES.find(c=>c.amount===b.amount&&c.duration===b.duration&&c.cutRate===(b.cutRate||0));
+  const selectedCourse=matchedCourse?matchedCourse.label:'カスタム';
+  const cut=b.amount&&b.cutRate?Math.round(b.amount*b.cutRate/100):0;
+  return `<div class="overlay" id="overlay"><div class="modal">
+    <div class="modal-header"><div class="modal-title">${isNew?'新規予約':'予約編集'}</div><button class="close-btn" id="modal-close">✕</button></div>
+    <div class="form-grid">
+      <div class="form-row">
+        <div class="form-field"><label class="form-label">お客様名</label><input class="inp" id="f-customer" value="${esc(b.customerName)}" placeholder="お客様名" /></div>
+        <div class="form-field"><label class="form-label">担当キャスト</label><select class="inp" id="f-cast"><option value="">選択してください</option>${state.casts.map(c=>`<option value="${esc(c.name)}"${b.castName===c.name?' selected':''}>${esc(c.name)}</option>`).join('')}</select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-field"><label class="form-label">日付</label><input class="inp" id="f-date" type="date" value="${esc(b.date||today)}" /></div>
+        <div class="form-field"><label class="form-label">開始時間</label><input class="inp" id="f-start" value="${esc(b.startTime)}" placeholder="19:00" /></div>
+      </div>
+      <div class="form-field">
+        <label class="form-label">コース選択</label>
+        <select class="inp" id="f-course">
+          ${COURSES.map(c=>`<option value="${esc(c.label)}"${selectedCourse===c.label?' selected':''}>${c.label}</option>`).join('')}
+        </select>
+      </div>
+      <div id="custom-fields" style="display:${selectedCourse==='カスタム'?'grid':'none'};gap:14px">
+        <div class="form-row">
+          <div class="form-field"><label class="form-label">時間（分）</label><input class="inp" id="f-duration" type="number" value="${b.duration||60}" /></div>
+          <div class="form-field"><label class="form-label">料金（円）</label><input class="inp" id="f-amount" type="number" value="${b.amount||0}" /></div>
+        </div>
+        <div class="form-field"><label class="form-label">バック率（%）</label><input class="inp" id="f-cutrate" type="number" value="${b.cutRate||60}" min="0" max="100" /></div>
+      </div>
+      <div class="highlight-box" id="cut-preview-box">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+          <div><div style="color:#9ca3af;font-size:11px">料金</div><div style="color:#f9fafb;font-size:16px;font-weight:700" id="preview-amount">${b.amount?'¥'+b.amount.toLocaleString():'—'}</div></div>
+          <div style="color:#6b7280;font-size:18px">→</div>
+          <div><div style="color:#9ca3af;font-size:11px">キャスト取り分</div><div style="color:#e879f9;font-size:18px;font-weight:800" id="cut-preview">${cut>0?'¥'+cut.toLocaleString():'—'}</div></div>
+          <div><div style="color:#9ca3af;font-size:11px">店舗利益</div><div style="color:#22c55e;font-size:16px;font-weight:700" id="preview-shop">${b.amount&&cut?'¥'+(b.amount-cut).toLocaleString():'—'}</div></div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-field"><label class="form-label">ステータス</label><select class="inp" id="f-status">${Object.keys(bookingStatusColor).map(s=>`<option${b.status===s?' selected':''}>${s}</option>`).join('')}</select></div>
+        <div class="form-field"><label class="form-label">住所</label><input class="inp" id="f-address" value="${esc(b.address)}" placeholder="住所を入力" /></div>
+      </div>
+    </div>
+    <div class="flex gap-8 mt-20" style="justify-content:${isNew?'flex-end':'space-between'}">
+      ${!isNew?`<button class="btn-danger" id="modal-delete">削除</button>`:''}
+      <div class="flex gap-8"><button class="btn-secondary" id="modal-cancel">キャンセル</button><button class="btn" id="modal-save" style="background:linear-gradient(135deg,#3b82f6,#22c55e)">保存する</button></div>
+    </div>
+  </div></div>`;
+}
+
+function buildUserModal(u){
+  const isNew=!u.id||u.id===0;
+  return `<div class="overlay" id="overlay"><div class="modal">
+    <div class="modal-header"><div class="modal-title">${isNew?'アカウント追加':'アカウント編集'}</div><button class="close-btn" id="modal-close">✕</button></div>
+    <div class="form-grid">
+      <div class="form-row"><div class="form-field"><label class="form-label">表示名</label><input class="inp" id="f-display" value="${esc(u.displayName)}" placeholder="管理者" /></div><div class="form-field"><label class="form-label">ログインID</label><input class="inp" id="f-username" value="${esc(u.username)}" placeholder="admin" /></div></div>
+      <div class="form-field"><label class="form-label">パスワード</label><input class="inp" id="f-password" value="${esc(u.password)}" placeholder="パスワード" /></div>
+    </div>
+    <div class="flex gap-8 mt-20" style="justify-content:${isNew?'flex-end':'space-between'}">
+      ${!isNew&&u.id!==state.currentUser.id?`<button class="btn-danger" id="modal-delete">削除</button>`:''}
+      <div class="flex gap-8"><button class="btn-secondary" id="modal-cancel">キャンセル</button><button class="btn" id="modal-save" style="background:linear-gradient(135deg,#f59e0b,#ef4444)">保存する</button></div>
+    </div>
+  </div></div>`;
+}
+
+// EVENTS
+function bindEvents(){
+  const loginBtn=document.getElementById('login-btn');
+  if(loginBtn){loginBtn.addEventListener('click',doLogin);document.querySelectorAll('#l-user,#l-pass').forEach(el=>el.addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();}));}
+  const logoutBtn=document.getElementById('logout-btn');
+  if(logoutBtn) logoutBtn.addEventListener('click',doLogout);
+  document.querySelectorAll('[data-tab]').forEach(btn=>btn.addEventListener('click',()=>setState({tab:btn.dataset.tab,search:''})));
+  const si=document.getElementById('search-inp');
+  if(si) si.addEventListener('input',e=>setState({search:e.target.value}));
+  const addCust=document.getElementById('add-customer-btn');
+  if(addCust) addCust.addEventListener('click',()=>setState({modal:{type:'customer',data:{id:0,name:'',phone:'',visits:0,lastVisit:'',totalSpent:0,usedCasts:[],ngCasts:[],ngNotes:'',memo:'',rank:'通常'}}}));
+  const addCast=document.getElementById('add-cast-btn');
+  if(addCast) addCast.addEventListener('click',()=>setState({modal:{type:'cast',data:{id:0,name:'',status:'出勤前',startTime:'',endTime:'',phone:'',note:'',cutRate:50}}}));
+  const addBook=document.getElementById('add-booking-btn');
+  if(addBook) addBook.addEventListener('click',()=>setState({modal:{type:'booking',data:{id:0,customerName:'',castName:'',startTime:'',duration:60,status:'予約',address:'',amount:0,date:todayStr()}}}));
+  const addUser=document.getElementById('add-user-btn');
+  if(addUser) addUser.addEventListener('click',()=>setState({modal:{type:'user',data:{id:0,displayName:'',username:'',password:'',role:'admin'}}}));
+
+  document.querySelectorAll('[data-customer-id]').forEach(el=>el.addEventListener('click',()=>{const c=state.customers.find(x=>x.id==el.dataset.customerId);if(c)setState({modal:{type:'customer',data:{...c}}});}));
+  document.querySelectorAll('[data-cast-id]').forEach(el=>el.addEventListener('click',()=>{const c=state.casts.find(x=>x.id==el.dataset.castId);if(c)setState({modal:{type:'cast',data:{...c}}});}));
+  document.querySelectorAll('[data-booking-id]').forEach(el=>el.addEventListener('click',()=>{const b=state.bookings.find(x=>x.id==el.dataset.bookingId);if(b)setState({modal:{type:'booking',data:{...b}}});}));
+  document.querySelectorAll('[data-user-id]').forEach(el=>el.addEventListener('click',()=>{const u=state.users.find(x=>x.id==el.dataset.userId);if(u)setState({modal:{type:'user',data:{...u}}});}));
+
+  const overlay=document.getElementById('overlay');
+  if(overlay) overlay.addEventListener('click',e=>{if(e.target===overlay)setState({modal:null});});
+  const mc=document.getElementById('modal-close');
+  if(mc) mc.addEventListener('click',()=>setState({modal:null}));
+  const mcan=document.getElementById('modal-cancel');
+  if(mcan) mcan.addEventListener('click',()=>setState({modal:null}));
+
+  // コース選択 → 料金・バック率自動セット
+  const courseSel=document.getElementById('f-course');
+  function updateCoursePreview(){
+    if(!courseSel) return;
+    const label=courseSel.value;
+    const course=COURSES.find(c=>c.label===label);
+    const customFields=document.getElementById('custom-fields');
+    if(customFields) customFields.style.display=label==='カスタム'?'grid':'none';
+    let amount=0,cutRate=0,duration=0;
+    if(course&&label!=='カスタム'){
+      amount=course.amount; cutRate=course.cutRate; duration=course.duration;
+    } else {
+      amount=parseInt((document.getElementById('f-amount')||{}).value)||0;
+      cutRate=parseInt((document.getElementById('f-cutrate')||{}).value)||60;
+      duration=parseInt((document.getElementById('f-duration')||{}).value)||60;
+    }
+    const cut=amount&&cutRate?Math.round(amount*cutRate/100):0;
+    const pa=document.getElementById('preview-amount');
+    const cp=document.getElementById('cut-preview');
+    const ps=document.getElementById('preview-shop');
+    if(pa) pa.textContent=amount?'¥'+amount.toLocaleString():'—';
+    if(cp) cp.textContent=cut?'¥'+cut.toLocaleString():'—';
+    if(ps) ps.textContent=amount&&cut?'¥'+(amount-cut).toLocaleString():'—';
+  }
+  if(courseSel) courseSel.addEventListener('change',updateCoursePreview);
+  const customAmountInp=document.getElementById('f-amount');
+  const customCutInp=document.getElementById('f-cutrate');
+  if(customAmountInp) customAmountInp.addEventListener('input',updateCoursePreview);
+  if(customCutInp) customCutInp.addEventListener('input',updateCoursePreview);
+
+  document.querySelectorAll('[data-remove-ng]').forEach(el=>el.addEventListener('click',e=>{e.stopPropagation();state.modal.data.ngCasts=state.modal.data.ngCasts.filter(n=>n!==el.dataset.removeNg);setState({modal:{...state.modal}});}));
+  const addNgBtn=document.getElementById('add-ng-btn');
+  if(addNgBtn) addNgBtn.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();const val=document.getElementById('f-ng-select').value;if(val&&!state.modal.data.ngCasts.includes(val)){state.modal.data.ngCasts=[...state.modal.data.ngCasts,val];setState({modal:{...state.modal}});}});
+
+  const ms=document.getElementById('modal-save');
+  if(ms) ms.addEventListener('click',saveModal);
+  const md=document.getElementById('modal-delete');
+  if(md) md.addEventListener('click',deleteModal);
+}
+
+function saveModal(){
+  const m=state.modal;if(!m)return;
+  if(m.type==='customer'){
+    const d={...m.data,name:document.getElementById('f-name').value,phone:document.getElementById('f-phone').value,rank:document.getElementById('f-rank').value,ngNotes:document.getElementById('f-ng-notes').value,memo:document.getElementById('f-memo').value};
+    if(!d.id){d.id=Date.now();setState({customers:[...state.customers,d],modal:null});}else setState({customers:state.customers.map(c=>c.id===d.id?d:c),modal:null});
+  }
+  if(m.type==='cast'){
+    const d={...m.data,name:document.getElementById('f-name').value,status:document.getElementById('f-status').value,startTime:document.getElementById('f-start').value,endTime:document.getElementById('f-end').value,cutRate:parseInt(document.getElementById('f-cutrate').value)||50,phone:document.getElementById('f-phone').value,note:document.getElementById('f-note').value};
+    if(!d.id){d.id=Date.now();setState({casts:[...state.casts,d],modal:null});}else setState({casts:state.casts.map(c=>c.id===d.id?d:c),modal:null});
+  }
+  if(m.type==='booking'){
+    const courseLabel=(document.getElementById('f-course')||{}).value||'カスタム';
+    const course=COURSES.find(c=>c.label===courseLabel);
+    const isCustom=courseLabel==='カスタム';
+    const amount=isCustom?parseInt((document.getElementById('f-amount')||{}).value)||0:course.amount;
+    const duration=isCustom?parseInt((document.getElementById('f-duration')||{}).value)||60:course.duration;
+    const cutRate=isCustom?parseInt((document.getElementById('f-cutrate')||{}).value)||60:course.cutRate;
+    const d={...m.data,customerName:document.getElementById('f-customer').value,castName:document.getElementById('f-cast').value,date:document.getElementById('f-date').value,startTime:document.getElementById('f-start').value,duration,status:document.getElementById('f-status').value,amount,cutRate,address:document.getElementById('f-address').value};
+    if(!d.id){d.id=Date.now();setState({bookings:[...state.bookings,d],modal:null});}else setState({bookings:state.bookings.map(b=>b.id===d.id?d:b),modal:null});
+  }
+  if(m.type==='user'){
+    const d={...m.data,displayName:document.getElementById('f-display').value,username:document.getElementById('f-username').value,password:document.getElementById('f-password').value,role:'admin'};
+    if(!d.id){d.id=Date.now();setState({users:[...state.users,d],modal:null});}else setState({users:state.users.map(u=>u.id===d.id?d:u),modal:null});
+  }
+}
+
+function deleteModal(){
+  if(!confirm('本当に削除しますか？')) return;
+  const m=state.modal;if(!m)return;
+  if(m.type==="customer") setState({customers:state.customers.filter(c=>c.id!==m.data.id),modal:null});
+  if(m.type==="cast") setState({casts:state.casts.filter(c=>c.id!==m.data.id),modal:null});
+  if(m.type==="booking") setState({bookings:state.bookings.filter(b=>b.id!==m.data.id),modal:null});
+  if(m.type==='user') setState({users:state.users.filter(u=>u.id!==m.data.id),modal:null});
+}
+
+render();
+</script>
+</body>
+</html>
